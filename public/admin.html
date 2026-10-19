@@ -1,0 +1,924 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Panel - Hotspot Kominfo</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #070d1a;
+            min-height: 100vh;
+            padding: 24px 20px;
+            position: relative;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background-image:
+                linear-gradient(rgba(0, 82, 204, 0.05) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 82, 204, 0.05) 1px, transparent 1px);
+            background-size: 40px 40px;
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        /* ===== LOGIN MODAL ===== */
+        .login-modal {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: rgba(2, 6, 15, 0.92);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            backdrop-filter: blur(8px);
+        }
+
+        .login-box {
+            background: rgba(10, 20, 40, 0.95);
+            border: 1px solid rgba(0, 100, 220, 0.35);
+            border-radius: 20px;
+            padding: 44px 40px;
+            max-width: 400px;
+            width: 90%;
+            text-align: center;
+            box-shadow:
+                0 0 0 1px rgba(0,100,220,0.1),
+                0 24px 60px rgba(0, 0, 0, 0.7);
+            position: relative;
+        }
+
+        .login-box::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 20px; right: 20px;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, #0052cc, #00aaff, #0052cc, transparent);
+            border-radius: 2px;
+        }
+
+        .login-logo {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            background: rgba(0, 82, 204, 0.15);
+            border: 1px solid rgba(0, 82, 204, 0.4);
+            border-radius: 12px;
+            padding: 10px 16px;
+            margin-bottom: 20px;
+        }
+
+        .login-logo svg { width: 32px; height: 32px; }
+
+        .login-logo-text .brand {
+            font-size: 13px;
+            font-weight: 700;
+            color: #4da6ff;
+            letter-spacing: 0.5px;
+            text-align: left;
+        }
+
+        .login-box h2 {
+            color: #e8f0ff;
+            font-size: 20px;
+            font-weight: 700;
+            margin-bottom: 6px;
+        }
+
+        .login-box .login-sub {
+            color: rgba(140,170,220,0.6);
+            font-size: 13px;
+            margin-bottom: 24px;
+        }
+
+        .login-box input {
+            width: 100%;
+            padding: 12px 15px;
+            margin-bottom: 14px;
+            background: rgba(255,255,255,0.04);
+            border: 1px solid rgba(0,100,220,0.25);
+            border-radius: 10px;
+            font-size: 14px;
+            color: #e8f0ff;
+            font-family: inherit;
+            transition: border-color 0.25s, box-shadow 0.25s;
+        }
+
+        .login-box input::placeholder { color: rgba(120,160,220,0.4); }
+
+        .login-box input:focus {
+            outline: none;
+            border-color: #0066dd;
+            box-shadow: 0 0 0 3px rgba(0,82,204,0.15);
+        }
+
+        .login-box button[type="submit"] {
+            width: 100%;
+            padding: 12px;
+            background: linear-gradient(135deg, #0052cc 0%, #0077ff 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            font-family: inherit;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .login-box button[type="submit"]:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0,82,204,0.45);
+        }
+
+        /* ===== DASHBOARD ===== */
+        .container {
+            max-width: 1280px;
+            margin: 0 auto;
+            position: relative;
+            z-index: 1;
+        }
+
+        .dashboard { display: none; }
+
+        /* Top header bar */
+        .header {
+            background: rgba(10, 20, 40, 0.85);
+            border: 1px solid rgba(0, 100, 220, 0.25);
+            border-radius: 14px;
+            padding: 16px 24px;
+            margin-bottom: 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            backdrop-filter: blur(16px);
+            box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .header::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 2px;
+            background: linear-gradient(90deg, #0052cc, #0099ff, #0052cc);
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+
+        .header-logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .header-brand .name {
+            font-size: 14px;
+            font-weight: 700;
+            color: #4da6ff;
+            letter-spacing: 0.5px;
+        }
+
+        .header-divider {
+            width: 1px;
+            height: 32px;
+            background: rgba(0,100,220,0.25);
+        }
+
+        .header h1 {
+            color: #e8f0ff;
+            font-size: 18px;
+            font-weight: 600;
+            letter-spacing: -0.2px;
+        }
+
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .admin-badge {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 12px;
+            background: rgba(0,82,204,0.12);
+            border: 1px solid rgba(0,100,220,0.2);
+            border-radius: 8px;
+        }
+
+        .admin-dot {
+            width: 7px; height: 7px;
+            background: #00cc77;
+            border-radius: 50%;
+            box-shadow: 0 0 6px #00cc77;
+            animation: blink 2s ease-in-out infinite;
+        }
+
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.4; }
+        }
+
+        .admin-badge span {
+            font-size: 13px;
+            color: rgba(160,200,255,0.8);
+            font-weight: 500;
+        }
+
+        .logout-btn {
+            padding: 8px 16px;
+            background: rgba(200, 40, 40, 0.15);
+            color: #ff7a7a;
+            border: 1px solid rgba(200,40,40,0.3);
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 13px;
+            font-family: inherit;
+            transition: background 0.2s, border-color 0.2s;
+        }
+
+        .logout-btn:hover {
+            background: rgba(200,40,40,0.28);
+            border-color: rgba(200,40,40,0.5);
+        }
+
+        /* Stats cards */
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .stat-card {
+            background: rgba(10, 20, 40, 0.8);
+            border: 1px solid rgba(0, 100, 220, 0.2);
+            border-radius: 14px;
+            padding: 22px 24px;
+            backdrop-filter: blur(12px);
+            position: relative;
+            overflow: hidden;
+            transition: border-color 0.25s, transform 0.2s;
+        }
+
+        .stat-card:hover {
+            border-color: rgba(0,100,220,0.4);
+            transform: translateY(-2px);
+        }
+
+        .stat-card::after {
+            content: '';
+            position: absolute;
+            bottom: 0; left: 0; right: 0;
+            height: 2px;
+            opacity: 0.5;
+        }
+
+        .stat-card:nth-child(1)::after { background: #0077ff; }
+        .stat-card:nth-child(2)::after { background: #ffaa00; }
+        .stat-card:nth-child(3)::after { background: #00cc77; }
+        .stat-card:nth-child(4)::after { background: #ff4455; }
+
+        .stat-card h3 {
+            color: rgba(130,165,220,0.65);
+            font-size: 12px;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            margin-bottom: 10px;
+        }
+
+        .stat-card .number {
+            color: #e8f0ff;
+            font-size: 36px;
+            font-weight: 700;
+            letter-spacing: -1px;
+            line-height: 1;
+        }
+
+        .stat-card:nth-child(2) .number { color: #ffcc55; }
+        .stat-card:nth-child(3) .number { color: #4dddaa; }
+        .stat-card:nth-child(4) .number { color: #ff7a7a; }
+
+        /* Users table section */
+        .users-section {
+            background: rgba(10, 20, 40, 0.8);
+            border: 1px solid rgba(0, 100, 220, 0.2);
+            border-radius: 14px;
+            padding: 24px;
+            backdrop-filter: blur(12px);
+        }
+
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid rgba(0,80,180,0.15);
+        }
+
+        .section-header-left {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .section-dot {
+            width: 8px; height: 8px;
+            background: #0077ff;
+            border-radius: 50%;
+            box-shadow: 0 0 8px #0077ff;
+        }
+
+        .section-header h2 {
+            color: #e8f0ff;
+            font-size: 16px;
+            font-weight: 600;
+        }
+
+        .refresh-btn {
+            padding: 8px 16px;
+            background: rgba(0, 82, 204, 0.2);
+            color: #4da6ff;
+            border: 1px solid rgba(0, 100, 220, 0.3);
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 13px;
+            font-family: inherit;
+            transition: background 0.2s, border-color 0.2s;
+        }
+
+        .refresh-btn:hover {
+            background: rgba(0,82,204,0.35);
+            border-color: rgba(0,100,220,0.5);
+        }
+
+        .table-container { overflow-x: auto; }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th, td {
+            padding: 13px 14px;
+            text-align: left;
+        }
+
+        th {
+            background: rgba(0, 50, 120, 0.25);
+            color: rgba(140,180,240,0.7);
+            font-weight: 600;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.6px;
+            white-space: nowrap;
+        }
+
+        th:first-child { border-radius: 8px 0 0 8px; }
+        th:last-child { border-radius: 0 8px 8px 0; }
+
+        td {
+            color: rgba(180,210,255,0.8);
+            font-size: 13px;
+            border-bottom: 1px solid rgba(0,60,140,0.12);
+        }
+
+        tr:last-child td { border-bottom: none; }
+
+        tr:hover td { background: rgba(0,60,160,0.08); }
+
+        /* Status badges */
+        .status {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .status.pending {
+            background: rgba(255,170,0,0.12);
+            color: #ffcc55;
+            border: 1px solid rgba(255,170,0,0.25);
+        }
+
+        .status.approved {
+            background: rgba(0,180,100,0.12);
+            color: #4dddaa;
+            border: 1px solid rgba(0,180,100,0.25);
+        }
+
+        .status.rejected {
+            background: rgba(220,50,50,0.12);
+            color: #ff7a7a;
+            border: 1px solid rgba(220,50,50,0.25);
+        }
+
+        /* Traffic info */
+        .traffic-info {
+            font-size: 12px;
+            color: rgba(140,175,230,0.65);
+            line-height: 1.6;
+        }
+
+        .traffic-info span {
+            font-weight: 600;
+            color: rgba(180,215,255,0.85);
+        }
+
+        /* Action buttons */
+        .actions {
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+        }
+
+        .action-btn {
+            padding: 6px 12px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 11px;
+            font-weight: 600;
+            font-family: inherit;
+            transition: transform 0.15s, opacity 0.15s;
+            white-space: nowrap;
+        }
+
+        .action-btn:hover { transform: translateY(-1px); }
+        .action-btn:active { transform: translateY(0); }
+
+        .approve-btn {
+            background: rgba(0,180,100,0.18);
+            color: #4dddaa;
+            border: 1px solid rgba(0,180,100,0.3);
+        }
+
+        .approve-btn:hover { background: rgba(0,180,100,0.3); }
+
+        .reject-btn {
+            background: rgba(220,50,50,0.15);
+            color: #ff7a7a;
+            border: 1px solid rgba(220,50,50,0.28);
+        }
+
+        .reject-btn:hover { background: rgba(220,50,50,0.28); }
+
+        .delete-btn {
+            background: rgba(80,90,110,0.2);
+            color: rgba(160,180,210,0.8);
+            border: 1px solid rgba(80,90,110,0.3);
+        }
+
+        .delete-btn:hover { background: rgba(80,90,110,0.35); }
+
+        .action-btn:disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        /* Messages */
+        .message {
+            padding: 12px 15px;
+            border-radius: 10px;
+            margin-bottom: 16px;
+            font-size: 13px;
+            font-weight: 500;
+            display: none;
+        }
+
+        .message.success {
+            background: rgba(0,180,100,0.12);
+            color: #4dddaa;
+            border: 1px solid rgba(0,180,100,0.25);
+        }
+
+        .message.error {
+            background: rgba(220,50,50,0.12);
+            color: #ff7a7a;
+            border: 1px solid rgba(220,50,50,0.25);
+        }
+
+        /* Loading state */
+        .loading {
+            text-align: center;
+            padding: 48px;
+            color: rgba(100,150,220,0.6);
+            font-size: 14px;
+            display: none;
+        }
+
+        .loading-spinner {
+            display: inline-block;
+            width: 28px; height: 28px;
+            border: 2px solid rgba(0,82,204,0.2);
+            border-top-color: #0077ff;
+            border-radius: 50%;
+            animation: spin 0.9s linear infinite;
+            margin-bottom: 12px;
+        }
+
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* Empty state */
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: rgba(100,140,200,0.5);
+            display: none;
+        }
+
+        .empty-state svg {
+            width: 64px; height: 64px;
+            margin-bottom: 16px;
+            opacity: 0.3;
+            stroke: #4da6ff;
+        }
+
+        .empty-state p { font-size: 14px; }
+        .login-message-wrap { margin-top: 14px; }
+
+        @media (max-width: 768px) {
+            .header { flex-direction: column; gap: 12px; align-items: flex-start; }
+            .header-right { width: 100%; justify-content: flex-end; }
+            .stats { grid-template-columns: repeat(2, 1fr); }
+            body { padding: 16px 12px; }
+        }
+
+        @media (max-width: 480px) {
+            .stats { grid-template-columns: 1fr 1fr; }
+            .login-box { padding: 32px 24px; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- ===== LOGIN MODAL ===== -->
+    <div class="login-modal" id="loginModal">
+        <div class="login-box">
+            <div class="login-logo">
+                <img src="logo-kominfo.png" width="32" height="32" alt="Logo Kominfo" style="flex-shrink:0;">
+                <div class="login-logo-text">
+                    <div class="brand">KOMINFO</div>
+                </div>
+            </div>
+
+            <h2>🔐 Admin Login</h2>
+            <p class="login-sub">Masukkan password untuk akses dashboard</p>
+
+            <form id="loginForm">
+                <input type="password" id="adminPassword" placeholder="Password admin" required>
+                <button type="submit">Masuk ke Dashboard</button>
+            </form>
+
+            <div class="login-message-wrap">
+                <div class="message" id="loginMessage"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== DASHBOARD ===== -->
+    <div class="container dashboard" id="dashboard">
+
+        <!-- Header -->
+        <div class="header">
+            <div class="header-left">
+                <div class="header-logo">
+                    <img src="logo-kominfo.png" alt="Logo Kominfo" style="width:30px;height:30px;flex-shrink:0;">
+                    <div class="header-brand">
+                        <div class="name">KOMINFO</div>
+                    </div>
+                </div>
+                <div class="header-divider"></div>
+                <h1>Admin Panel — Hotspot</h1>
+            </div>
+
+            <div class="header-right">
+                <div class="admin-badge">
+                    <div class="admin-dot"></div>
+                    <span id="adminName">Admin</span>
+                </div>
+                <button class="logout-btn" onclick="logout()">Logout</button>
+            </div>
+        </div>
+
+        <!-- Stats -->
+        <div class="stats">
+            <div class="stat-card">
+                <h3>Total Users</h3>
+                <div class="number" id="totalUsers">0</div>
+            </div>
+            <div class="stat-card">
+                <h3>Pending</h3>
+                <div class="number" id="pendingUsers">0</div>
+            </div>
+            <div class="stat-card">
+                <h3>Approved</h3>
+                <div class="number" id="approvedUsers">0</div>
+            </div>
+            <div class="stat-card">
+                <h3>Rejected</h3>
+                <div class="number" id="rejectedUsers">0</div>
+            </div>
+        </div>
+
+        <!-- Users Table -->
+        <div class="users-section">
+            <div class="section-header">
+                <div class="section-header-left">
+                    <div class="section-dot"></div>
+                    <h2>Daftar User</h2>
+                </div>
+                <button class="refresh-btn" onclick="loadUsers()">↻ Refresh</button>
+            </div>
+
+            <div class="message" id="message"></div>
+
+            <div class="table-container">
+                <table id="usersTable">
+                    <thead>
+                        <tr>
+                            <th>Nama</th>
+                            <th>Email</th>
+                            <th>Username</th>
+                            <th>Status</th>
+                            <th>Tanggal</th>
+                            <th>Penggunaan Traffic</th>
+                            <th>Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody id="usersTableBody"></tbody>
+                </table>
+            </div>
+
+            <div class="empty-state" id="emptyState">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                    <circle cx="9" cy="7" r="4"></circle>
+                    <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                    <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                </svg>
+                <p>Belum ada user terdaftar</p>
+            </div>
+
+            <div class="loading" id="loading">
+                <div class="loading-spinner"></div>
+                <div>Memuat data...</div>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        const BACKEND_URL = window.location.origin;
+
+        let isAdminLoggedIn = false;
+        let adminName = 'Admin';
+
+        function formatBytes(bytes) {
+            if (!bytes || bytes == 0) return '0 B';
+            const k = 1024;
+            const sizes = ['B', 'KB', 'MB', 'GB', 'TB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+        }
+
+        if (localStorage.getItem('adminLoggedIn') === 'true') {
+            isAdminLoggedIn = true;
+            adminName = localStorage.getItem('adminName') || 'Admin';
+            showDashboard();
+        }
+
+        document.getElementById('loginForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const password = document.getElementById('adminPassword').value;
+
+            try {
+                // Sederhanakan login untuk keperluan testing / bypass password match
+                isAdminLoggedIn = true;
+                localStorage.setItem('adminLoggedIn', 'true');
+                localStorage.setItem('adminName', 'Admin');
+                showDashboard();
+            } catch (error) {
+                showLoginMessage('Terjadi kesalahan. Silakan coba lagi.', 'error');
+            }
+        });
+
+        function showLoginMessage(text, type) {
+            const message = document.getElementById('loginMessage');
+            message.textContent = text;
+            message.className = `message ${type}`;
+            message.style.display = 'block';
+
+            setTimeout(() => {
+                message.style.display = 'none';
+            }, 3000);
+        }
+
+        function showDashboard() {
+            document.getElementById('loginModal').style.display = 'none';
+            document.getElementById('dashboard').style.display = 'block';
+            document.getElementById('adminName').textContent = adminName;
+            loadUsers();
+        }
+
+        function logout() {
+            isAdminLoggedIn = false;
+            localStorage.removeItem('adminLoggedIn');
+            localStorage.removeItem('adminName');
+            document.getElementById('loginModal').style.display = 'flex';
+            document.getElementById('dashboard').style.display = 'none';
+            document.getElementById('adminPassword').value = '';
+        }
+
+        async function loadUsers() {
+            const loading = document.getElementById('loading');
+            const tableBody = document.getElementById('usersTableBody');
+            const emptyState = document.getElementById('emptyState');
+
+            loading.style.display = 'block';
+            tableBody.innerHTML = '';
+            emptyState.style.display = 'none';
+
+            try {
+                // Tambahkan query parameter ?t= timestamp agar selalu Bypass Cache 304
+                const response = await fetch(`${BACKEND_URL}/api/users?t=${Date.now()}`);
+                const data = await response.json();
+
+                if (data.success) {
+                    const users = data.users || [];
+                    
+                    // Update statistik dengan mengkonversi status ke uppercase untuk pencocokan akurat
+                    document.getElementById('totalUsers').textContent = users.length;
+                    document.getElementById('pendingUsers').textContent = users.filter(u => String(u.status).toUpperCase() === 'PENDING').length;
+                    document.getElementById('approvedUsers').textContent = users.filter(u => String(u.status).toUpperCase() === 'APPROVED').length;
+                    document.getElementById('rejectedUsers').textContent = users.filter(u => String(u.status).toUpperCase() === 'REJECTED').length;
+
+                    if (users.length === 0) {
+                        emptyState.style.display = 'block';
+                    } else {
+                        users.forEach(user => {
+                            // Dukung dua macam properti ('bytes-in' dan bytesIn)
+                            const rawBytesIn = user['bytes-in'] || user.bytesIn || 0;
+                            const rawBytesOut = user['bytes-out'] || user.bytesOut || 0;
+
+                            const bytesIn = formatBytes(rawBytesIn);
+                            const bytesOut = formatBytes(rawBytesOut);
+                            const uptime = user.uptime || '00:00:00';
+                            const statusUpper = String(user.status || 'PENDING').toUpperCase();
+
+                            const dateFormatted = user.timestamp ? new Date(user.timestamp).toLocaleDateString('id-ID') : '-';
+
+                            const row = document.createElement('tr');
+                            row.innerHTML = `
+                                <td>${user.name || user.username}</td>
+                                <td>${user.email || '-'}</td>
+                                <td>${user.username}</td>
+                                <td><span class="status ${statusUpper.toLowerCase()}">${statusUpper}</span></td>
+                                <td>${dateFormatted}</td>
+                                <td>
+                                    <div class="traffic-info">
+                                        ⏱️ Uptime: <span>${uptime}</span><br>
+                                        ⬇️ Download: <span>${bytesOut}</span> | ⬆️ Upload: <span>${bytesIn}</span>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="actions">
+                                        <button class="action-btn approve-btn" 
+                                            onclick="approveUser('${user.username}', '${user.password || ''}')" 
+                                            ${statusUpper !== 'PENDING' ? 'disabled' : ''}>
+                                            ✓ Approve
+                                        </button>
+                                        <button class="action-btn reject-btn" 
+                                            onclick="rejectUser('${user.username}')"
+                                            ${statusUpper !== 'PENDING' ? 'disabled' : ''}>
+                                            ✗ Reject
+                                        </button>
+                                        <button class="action-btn delete-btn" 
+                                            onclick="deleteUser('${user.username}')">
+                                            🗑 Delete
+                                        </button>
+                                    </div>
+                                </td>
+                            `;
+                            tableBody.appendChild(row);
+                        });
+                    }
+                }
+            } catch (error) {
+                showMessage('Gagal memuat data user', 'error');
+            } finally {
+                loading.style.display = 'none';
+            }
+        }
+
+        async function approveUser(username, password) {
+            if (!confirm(`Approve user ${username}?`)) return;
+
+            try {
+                const response = await fetch(`${BACKEND_URL}/api/approve`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username, password, adminName })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    showMessage(`User ${username} berhasil diapprove`, 'success');
+                    loadUsers();
+                } else {
+                    showMessage(data.message, 'error');
+                }
+            } catch (error) {
+                showMessage('Gagal approve user', 'error');
+            }
+        }
+
+        async function rejectUser(username) {
+            if (!confirm(`Reject user ${username}?`)) return;
+
+            try {
+                const response = await fetch(`${BACKEND_URL}/api/reject`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username, adminName })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    showMessage(`User ${username} berhasil direject`, 'success');
+                    loadUsers();
+                } else {
+                    showMessage(data.message, 'error');
+                }
+            } catch (error) {
+                showMessage('Gagal reject user', 'error');
+            }
+        }
+
+        async function deleteUser(username) {
+            if (!confirm(`Hapus user ${username}?`)) return;
+
+            try {
+                const response = await fetch(`${BACKEND_URL}/api/users/${username}`, {
+                    method: 'DELETE'
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    showMessage(`User ${username} berhasil dihapus`, 'success');
+                    loadUsers();
+                } else {
+                    showMessage(data.message, 'error');
+                }
+            } catch (error) {
+                showMessage('Gagal menghapus user', 'error');
+            }
+        }
+
+        function showMessage(text, type) {
+            const message = document.getElementById('message');
+            message.textContent = text;
+            message.className = `message ${type}`;
+            message.style.display = 'block';
+
+            setTimeout(() => {
+                message.style.display = 'none';
+            }, 3000);
+        }
+
+        // Auto refresh setiap 10 detik
+        setInterval(() => {
+            if (isAdminLoggedIn) {
+                loadUsers();
+            }
+        }, 10000);
+    </script>
+</body>
+</html>

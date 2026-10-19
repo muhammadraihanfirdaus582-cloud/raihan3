@@ -1,0 +1,580 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login Hotspot - Kominfo</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #070d1a;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* Animated background grid */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background-image:
+                linear-gradient(rgba(0, 82, 204, 0.07) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 82, 204, 0.07) 1px, transparent 1px);
+            background-size: 40px 40px;
+            z-index: 0;
+        }
+
+        /* Glowing orbs */
+        body::after {
+            content: '';
+            position: fixed;
+            top: -200px; left: -200px;
+            width: 600px; height: 600px;
+            background: radial-gradient(circle, rgba(0, 82, 204, 0.15) 0%, transparent 70%);
+            z-index: 0;
+            animation: pulse 6s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); opacity: 0.6; }
+            50% { transform: scale(1.1); opacity: 1; }
+        }
+
+        .orb-right {
+            position: fixed;
+            bottom: -150px; right: -150px;
+            width: 500px; height: 500px;
+            background: radial-gradient(circle, rgba(0, 150, 255, 0.1) 0%, transparent 70%);
+            z-index: 0;
+            animation: pulse 8s ease-in-out infinite reverse;
+        }
+
+        .container {
+            background: rgba(10, 20, 40, 0.85);
+            border: 1px solid rgba(0, 100, 220, 0.3);
+            border-radius: 20px;
+            box-shadow:
+                0 0 0 1px rgba(0, 100, 220, 0.1),
+                0 20px 60px rgba(0, 0, 0, 0.6),
+                inset 0 1px 0 rgba(255, 255, 255, 0.05);
+            padding: 44px 40px;
+            max-width: 440px;
+            width: 100%;
+            position: relative;
+            z-index: 1;
+            backdrop-filter: blur(20px);
+        }
+
+        /* Top accent bar */
+        .container::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 20px; right: 20px;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, #0052cc, #00aaff, #0052cc, transparent);
+            border-radius: 2px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 32px;
+        }
+
+        /* Kominfo Logo Area */
+        .logo-area {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .kominfo-badge {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: rgba(0, 82, 204, 0.15);
+            border: 1px solid rgba(0, 82, 204, 0.4);
+            border-radius: 12px;
+            padding: 10px 18px;
+        }
+
+        .kominfo-logo-icon {
+            width: 36px;
+            height: 36px;
+            flex-shrink: 0;
+        }
+
+        .kominfo-text {
+            text-align: left;
+        }
+
+        .kominfo-text .brand {
+            font-size: 13px;
+            font-weight: 700;
+            color: #4da6ff;
+            letter-spacing: 0.5px;
+            line-height: 1.2;
+        }
+
+        .kominfo-text .sub {
+            font-size: 9px;
+            color: rgba(150, 190, 255, 0.6);
+            letter-spacing: 0.3px;
+            text-transform: uppercase;
+            display: none;
+        }
+
+        .divider-line {
+            width: 60px;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(0, 100, 220, 0.5), transparent);
+            margin: 14px auto;
+        }
+
+        .header h1 {
+            color: #e8f0ff;
+            font-size: 24px;
+            font-weight: 700;
+            letter-spacing: -0.3px;
+            margin-bottom: 6px;
+        }
+
+        .header p {
+            color: rgba(150, 180, 230, 0.7);
+            font-size: 13px;
+            font-weight: 400;
+        }
+
+        .form-group {
+            margin-bottom: 18px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 7px;
+            color: rgba(180, 210, 255, 0.85);
+            font-weight: 500;
+            font-size: 13px;
+            letter-spacing: 0.2px;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 12px 15px;
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(0, 100, 220, 0.25);
+            border-radius: 10px;
+            font-size: 14px;
+            color: #e8f0ff;
+            font-family: inherit;
+            transition: border-color 0.25s, background 0.25s, box-shadow 0.25s;
+        }
+
+        .form-group input::placeholder {
+            color: rgba(120, 160, 220, 0.4);
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: #0066dd;
+            background: rgba(0, 82, 204, 0.08);
+            box-shadow: 0 0 0 3px rgba(0, 82, 204, 0.15);
+        }
+
+        .btn {
+            width: 100%;
+            padding: 13px;
+            background: linear-gradient(135deg, #0052cc 0%, #0077ff 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            font-family: inherit;
+            letter-spacing: 0.3px;
+            transition: transform 0.2s, box-shadow 0.2s, background 0.2s;
+            position: relative;
+            overflow: hidden;
+            margin-top: 4px;
+        }
+
+        .btn::after {
+            content: '';
+            position: absolute;
+            top: 0; left: -100%;
+            width: 100%; height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.08), transparent);
+            transition: left 0.4s;
+        }
+
+        .btn:hover::after { left: 100%; }
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0, 82, 204, 0.45);
+            background: linear-gradient(135deg, #0060ee 0%, #0088ff 100%);
+        }
+
+        .btn:active { transform: translateY(0); }
+
+        .btn:disabled {
+            background: rgba(50, 70, 110, 0.5);
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .message {
+            padding: 12px 15px;
+            border-radius: 10px;
+            margin-top: 16px;
+            font-size: 13px;
+            font-weight: 500;
+            display: none;
+        }
+
+        .message.success {
+            background: rgba(0, 180, 100, 0.12);
+            color: #4dddaa;
+            border: 1px solid rgba(0, 180, 100, 0.25);
+        }
+
+        .message.error {
+            background: rgba(220, 50, 50, 0.12);
+            color: #ff7a7a;
+            border: 1px solid rgba(220, 50, 50, 0.25);
+        }
+
+        .message.info {
+            background: rgba(0, 100, 220, 0.12);
+            color: #79bbff;
+            border: 1px solid rgba(0, 100, 220, 0.25);
+        }
+
+        .register-link {
+            text-align: center;
+            margin-top: 20px;
+            color: rgba(130, 170, 230, 0.7);
+            font-size: 13px;
+        }
+
+        .register-link a {
+            color: #4da6ff;
+            text-decoration: none;
+            font-weight: 600;
+            transition: color 0.2s;
+        }
+
+        .register-link a:hover {
+            color: #79bbff;
+            text-decoration: underline;
+        }
+
+        .loading {
+            display: inline-block;
+            width: 16px; height: 16px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 0.8s ease-in-out infinite;
+            margin-right: 8px;
+            vertical-align: middle;
+        }
+
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        .status-check {
+            margin-top: 14px;
+            padding: 14px;
+            background: rgba(0, 50, 120, 0.1);
+            border: 1px solid rgba(0, 80, 180, 0.2);
+            border-radius: 10px;
+            display: none;
+        }
+
+        .status-check.show { display: block; }
+
+        .status-check p {
+            margin-bottom: 10px;
+            color: rgba(150, 180, 230, 0.7);
+            font-size: 13px;
+        }
+
+        .status-check-row {
+            display: flex;
+            gap: 8px;
+        }
+
+        .status-check input {
+            flex: 1;
+            padding: 9px 12px;
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(0, 100, 220, 0.25);
+            border-radius: 8px;
+            color: #e8f0ff;
+            font-size: 13px;
+            font-family: inherit;
+        }
+
+        .status-check input::placeholder { color: rgba(120, 160, 220, 0.4); }
+        .status-check input:focus {
+            outline: none;
+            border-color: #0066dd;
+            box-shadow: 0 0 0 2px rgba(0,82,204,0.15);
+        }
+
+        .status-check button {
+            padding: 9px 16px;
+            background: rgba(0, 82, 204, 0.7);
+            color: white;
+            border: 1px solid rgba(0, 100, 255, 0.4);
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 13px;
+            font-family: inherit;
+            transition: background 0.2s;
+            white-space: nowrap;
+        }
+
+        .status-check button:hover { background: rgba(0, 100, 255, 0.9); }
+
+        .status-result {
+            margin-top: 10px;
+            padding: 9px 12px;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 500;
+            display: none;
+        }
+
+        .status-result.approved { background: rgba(0, 180, 100, 0.12); color: #4dddaa; border: 1px solid rgba(0,180,100,0.2); }
+        .status-result.pending  { background: rgba(255, 170, 0, 0.12); color: #ffcc55; border: 1px solid rgba(255,170,0,0.2); }
+        .status-result.rejected { background: rgba(220, 50, 50, 0.12); color: #ff7a7a; border: 1px solid rgba(220,50,50,0.2); }
+        .status-result.not-found{ background: rgba(80, 80, 100, 0.12); color: #aab0c0; border: 1px solid rgba(80,80,100,0.2); }
+
+        .check-status-link {
+            background: none;
+            border: none;
+            color: rgba(100, 150, 220, 0.7);
+            cursor: pointer;
+            font-size: 12px;
+            text-decoration: underline;
+            font-family: inherit;
+            transition: color 0.2s;
+            padding: 0;
+        }
+
+        .check-status-link:hover { color: #4da6ff; }
+
+        .footer-note {
+            text-align: center;
+            margin-top: 14px;
+        }
+
+        /* Hotspot badge bottom */
+        .hotspot-badge {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            margin-top: 22px;
+            padding-top: 18px;
+            border-top: 1px solid rgba(0, 80, 180, 0.15);
+            color: rgba(100, 140, 200, 0.5);
+            font-size: 11px;
+            letter-spacing: 0.3px;
+        }
+
+        .hotspot-badge::before {
+            content: '📶';
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+    <div class="orb-right"></div>
+
+    <div class="container">
+        <div class="header">
+            <div class="logo-area">
+                <div class="kominfo-badge">
+                    <img src="logo-kominfo.png" class="kominfo-logo-icon" alt="Logo Kominfo">
+                    <div class="kominfo-text">
+                        <div class="brand">KOMINFO</div>
+                    </div>
+                </div>
+            </div>
+            <div class="divider-line"></div>
+            <h1>Login Hotspot</h1>
+            <p>Masukkan kredensial untuk akses WiFi</p>
+        </div>
+
+        <!-- FORM LOGIN BACKEND + HIDDEN MIKROTIK (Agar bisa otomatis kirim ke MikroTik setelah API sukses) -->
+        <form id="loginForm" name="login" action="$(link-login-only)" method="post">
+            <input type="hidden" name="dst" value="$(link-orig)">
+            <input type="hidden" name="popup" value="true">
+
+            <div class="form-group">
+                <label for="username">Username</label>
+                <input type="text" id="username" name="username" value="$(username)" required placeholder="Masukkan username">
+            </div>
+
+            <div class="form-group">
+                <label for="password">Password</label>
+                <input type="password" id="password" name="password" required placeholder="Masukkan password">
+            </div>
+
+            <button type="submit" class="btn" id="submitBtn">
+                <span id="btnText">Login</span>
+            </button>
+        </form>
+
+        <div class="message" id="message"></div>
+
+        <div class="status-check" id="statusCheck">
+            <p>Cek status registrasi:</p>
+            <div class="status-check-row">
+                <input type="text" id="checkUsername" placeholder="Username">
+                <button type="button" onclick="checkStatus()">Cek</button>
+            </div>
+            <div class="status-result" id="statusResult"></div>
+        </div>
+
+        <div class="register-link">
+            Belum punya akun? <a href="register.html">Daftar di sini</a>
+        </div>
+
+        <div class="footer-note">
+            <button type="button" onclick="toggleStatusCheck()" class="check-status-link">
+                Cek status registrasi
+            </button>
+        </div>
+
+        <div class="hotspot-badge">
+            Layanan WiFi Publik Pemerintah
+        </div>
+    </div>
+
+    <script>
+        // CONFIG BACKEND URL
+        const BACKEND_URL = window.location.origin.includes('vercel.app') 
+            ? window.location.origin 
+            : 'https://mikrotik-hostpot-login-done.vercel.app';
+
+        const form = document.getElementById('loginForm');
+        const submitBtn = document.getElementById('submitBtn');
+        const btnText = document.getElementById('btnText');
+        const message = document.getElementById('message');
+        const statusCheck = document.getElementById('statusCheck');
+
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const usernameVal = document.getElementById('username').value;
+            const passwordVal = document.getElementById('password').value;
+
+            const formData = {
+                username: usernameVal,
+                password: passwordVal
+            };
+
+            // Show loading
+            submitBtn.disabled = true;
+            btnText.innerHTML = '<span class="loading"></span> Memproses...';
+
+            try {
+                const response = await fetch(`${BACKEND_URL}/api/login`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(formData)
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    showMessage(`Selamat datang, ${data.user.name}! Login berhasil.`, 'success');
+                    
+                    setTimeout(() => {
+                        showMessage('Anda akan diarahkan ke internet...', 'info');
+                        // Lanjutkan submit form agar MikroTik mengenali sesi aktif user
+                        HTMLFormElement.prototype.submit.call(form);
+                    }, 1500);
+                } else {
+                    showMessage(data.message, 'error');
+                    submitBtn.disabled = false;
+                    btnText.textContent = 'Login';
+                }
+            } catch (error) {
+                // Fallback jika backend offline tapi ingin tetap bisa login langsung ke MikroTik
+                showMessage('Backend offline, mencoba langsung login ke MikroTik...', 'info');
+                setTimeout(() => {
+                    HTMLFormElement.prototype.submit.call(form);
+                }, 1000);
+            }
+        });
+
+        function toggleStatusCheck() {
+            statusCheck.classList.toggle('show');
+        }
+
+        async function checkStatus() {
+            const username = document.getElementById('checkUsername').value;
+            const statusResult = document.getElementById('statusResult');
+
+            if (!username) {
+                statusResult.textContent = 'Masukkan username';
+                statusResult.className = 'status-result not-found';
+                statusResult.style.display = 'block';
+                return;
+            }
+
+            try {
+                const response = await fetch(`${BACKEND_URL}/api/status/${username}`);
+                const data = await response.json();
+
+                if (data.success) {
+                    statusResult.textContent = `Status: ${data.status.toUpperCase()}`;
+                    statusResult.className = `status-result ${data.status}`;
+                    statusResult.style.display = 'block';
+
+                    if (data.status === 'pending') {
+                        statusResult.textContent += ' - Menunggu approval admin';
+                    } else if (data.status === 'approved') {
+                        statusResult.textContent += ' - Silakan login';
+                    } else if (data.status === 'rejected') {
+                        statusResult.textContent += ' - Registrasi ditolak';
+                    }
+                } else {
+                    statusResult.textContent = data.message;
+                    statusResult.className = 'status-result not-found';
+                    statusResult.style.display = 'block';
+                }
+            } catch (error) {
+                statusResult.textContent = 'Gagal mengecek status (Server backend tidak aktif)';
+                statusResult.className = 'status-result not-found';
+                statusResult.style.display = 'block';
+            }
+        }
+
+        function showMessage(text, type) {
+            message.textContent = text;
+            message.className = `message ${type}`;
+            message.style.display = 'block';
+        }
+    </script>
+</body>
+</html>
