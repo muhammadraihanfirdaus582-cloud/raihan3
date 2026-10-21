@@ -15,16 +15,16 @@ class MikrotikConfig {
       port: this.port,
       user: this.user,
       password: this.password,
-      timeout: 2500,
+      timeout: 5000, // Dinaikkan ke 5 detik untuk menghindari timeout cepat di Vercel/tunnel
       keepalive: false
     });
   }
 
-  // Helper untuk membatasi waktu koneksi agar tidak hang di Vercel
+  // Helper untuk membatasi waktu koneksi agar tidak hang
   async connectClient(client) {
     const connectPromise = client.connect();
     const timeoutPromise = new Promise((_, reject) => 
-      setTimeout(() => reject(new Error('MikroTik API Connection Timeout')), 2500)
+      setTimeout(() => reject(new Error('MikroTik API Connection Timeout ( > 5s )')), 5000)
     );
     return await Promise.race([connectPromise, timeoutPromise]);
   }
@@ -34,12 +34,23 @@ class MikrotikConfig {
     const client = this.getClient();
     try {
       const api = await this.connectClient(client);
-      await api.menu('/ip/hotspot/user').add({
+      
+      // Cek dulu apakah user sudah ada sebelumnya untuk menghindari duplikasi error
+      const userMenu = api.menu('/ip/hotspot/user');
+      const existingUsers = await userMenu.where('name', username).get();
+      
+      if (existingUsers && existingUsers.length > 0) {
+        console.log(`User ${username} sudah ada di MikroTik.`);
+        return { success: true, message: 'User already exists in MikroTik' };
+      }
+
+      await userMenu.add({
         name: username,
         password: password,
         profile: profile,
         server: 'all'
       });
+      
       console.log(`Berhasil menambahkan user ${username} via API!`);
       return { success: true, message: 'User added to hotspot' };
     } catch (error) {
