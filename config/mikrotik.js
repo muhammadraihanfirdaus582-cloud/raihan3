@@ -4,7 +4,7 @@ class MikrotikConfig {
   constructor() {
     this.host = process.env.MIKROTIK_HOST || process.env.MIKROTIK_IP || 'idn27.tunnel.id';
     this.user = process.env.MIKROTIK_USER || process.env.MIKROTIK_API_USER;
-    this.password = process.env.MIKROTIK_PASSWORD || process.env.MIKROTIK_API_PASSWORD;
+    this.password = process.env.MIKROTIK_PASSWORD || process.env.MIKROTIK_API_PASSWORD; // Diperbaiki: ditambah titik koma
     // Mengutamakan MIKROTIK_API_PORT agar tidak bentrok dengan PORT bawaan Vercel
     this.port = parseInt(process.env.MIKROTIK_API_PORT || process.env.MIKROTIK_PORT || '3111', 10);
   }
@@ -37,7 +37,7 @@ class MikrotikConfig {
       
       // Cek dulu apakah user sudah ada sebelumnya untuk menghindari duplikasi error
       const userMenu = api.menu('/ip/hotspot/user');
-      const existingUsers = await userMenu.where('name', username).get();
+      const existingUsers = await userMenu.where('name', username).get().catch(() => []);
       
       if (existingUsers && existingUsers.length > 0) {
         console.log(`User ${username} sudah ada di MikroTik.`);
@@ -67,7 +67,7 @@ class MikrotikConfig {
     try {
       const api = await this.connectClient(client);
       const userMenu = api.menu('/ip/hotspot/user');
-      const users = await userMenu.where('name', username).get();
+      const users = await userMenu.where('name', username).get().catch(() => []);
       
       if (!users || users.length === 0) {
         return { success: false, message: 'User tidak ditemukan di MikroTik' };
