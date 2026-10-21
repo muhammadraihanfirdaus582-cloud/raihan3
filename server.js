@@ -92,7 +92,7 @@ app.get(['/api/users', '/api/admin/users'], async (req, res) => {
   }
 });
 
-// 3. Approve user
+// 3. Approve user (Diperbarui agar memastikan user benar-benar masuk ke MikroTik sebelum sukses)
 app.post('/api/approve', async (req, res) => {
   try {
     const { username, adminName } = req.body;
@@ -101,17 +101,28 @@ app.post('/api/approve', async (req, res) => {
       return res.status(400).json({ success: false, message: 'Username wajib diisi' });
     }
     
-    await storageConfig.approveUser(username, adminName || 'Admin');
-    
     const userData = await storageConfig.getUserByUsername(username);
-    if (userData) {
-      await mikrotikConfig.addUserToHotspot(userData.username, userData.password);
+    if (!userData) {
+      return res.status(404).json({ success: false, message: 'Data user tidak ditemukan di database' });
     }
     
-    return res.json({ success: true, message: 'User berhasil disetujui' });
+    // Coba masukkan ke MikroTik terlebih dahulu
+    const mtResult = await mikrotikConfig.addUserToHotspot(userData.username, userData.password);
+    
+    if (!mtResult || !mtResult.success) {
+      return res.status(500).json({ 
+        success: false, 
+        message: 'Gagal menambahkan ke MikroTik: ' + (mtResult ? mtResult.message : 'Unknown error') 
+      });
+    }
+    
+    // Jika sukses di MikroTik, baru approve di database lokal
+    await storageConfig.approveUser(username, adminName || 'Admin');
+    
+    return res.json({ success: true, message: 'User berhasil disetujui dan ditambahkan ke MikroTik' });
   } catch (error) {
     console.error('Approval error:', error);
-    return res.status(500).json({ success: false, message: 'Gagal menyetujui user' });
+    return res.status(500).json({ success: false, message: 'Gagal menyetujui user: ' + error.message });
   }
 });
 
