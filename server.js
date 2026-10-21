@@ -53,7 +53,7 @@ app.post('/api/register', async (req, res) => {
   }
 });
 
-// 2. Get all users (admin panel)
+// 2. Get all users (admin panel) - Diamankan agar tidak error jika MikroTik timeout
 app.get(['/api/users', '/api/admin/users'], async (req, res) => {
   try {
     res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
@@ -64,11 +64,12 @@ app.get(['/api/users', '/api/admin/users'], async (req, res) => {
     try {
       if (mikrotikConfig.getUsersStats && typeof mikrotikConfig.getUsersStats === 'function') {
         const timeoutPromise = new Promise((_, reject) => 
-          setTimeout(() => reject(new Error('MikroTik Timeout')), 2500)
+          setTimeout(() => reject(new Error('MikroTik Timeout')), 2000)
         );
         mikrotikStats = await Promise.race([mikrotikConfig.getUsersStats(), timeoutPromise]);
       }
     } catch (mtErr) {
+      // Abaikan error stats MikroTik agar halaman admin tetap bisa menampilkan data user lokal
       mikrotikStats = [];
     }
 
@@ -92,7 +93,7 @@ app.get(['/api/users', '/api/admin/users'], async (req, res) => {
   }
 });
 
-// 3. Approve user (Diperbarui agar memastikan user benar-benar masuk ke MikroTik sebelum sukses)
+// 3. Approve user
 app.post('/api/approve', async (req, res) => {
   try {
     const { username, adminName } = req.body;
@@ -136,7 +137,9 @@ app.post('/api/reject', async (req, res) => {
     }
     
     await storageConfig.rejectUser(username, adminName || 'Admin');
-    await mikrotikConfig.removeUserFromHotspot(username);
+    try {
+      await mikrotikConfig.removeUserFromHotspot(username);
+    } catch (e) {}
     
     return res.json({ success: true, message: 'User berhasil ditolak' });
   } catch (error) {
@@ -151,7 +154,9 @@ app.delete('/api/users/:username', async (req, res) => {
     const { username } = req.params;
     
     await storageConfig.deleteUser(username);
-    await mikrotikConfig.removeUserFromHotspot(username);
+    try {
+      await mikrotikConfig.removeUserFromHotspot(username);
+    } catch (e) {}
     
     return res.json({ success: true, message: 'User berhasil dihapus' });
   } catch (error) {
